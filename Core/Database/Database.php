@@ -2,11 +2,21 @@
 
 namespace Core\Database;
 
+// singleton class to prevent multiple connection
 class Database
 {
     private $connection;
 
-    public function __construct()
+    private static $instance = null;
+
+    public static function getInstance(){
+        if(!static::$instance){
+            static::$instance = new Database();
+        }
+        return static::$instance;
+    }
+
+    private function __construct()
     {
         $this->connection = new \mysqli('us-cdbr-east-06.cleardb.net', 'bd60a68cb50f4b', '43189fcf', 'heroku_c91005d515ff088');
 
