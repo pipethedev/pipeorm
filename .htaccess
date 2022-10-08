@@ -1,0 +1,11 @@
+RewriteEngine On
+
+RewriteCond %{REQUEST_URI} !/index.php
+
+RewriteCond %{REQUEST_URI} !.*\.jpg$
+
+RewriteCond %{REQUEST_URI} !.*\.png$
+
+RewriteCond %{REQUEST_URI} !.*\.css$
+
+RewriteCond %{REQUEST_URI} !.*\.js$
