@@ -46,9 +46,13 @@ class Builder
         $command = "select ".$command." from ".$this->table. " ";
         foreach ($this->select_command_clauses as $clause){
             if(!empty($this->$clause)){
-                $command.-$this->$clause. ""
+                $command.-$this->$clause. " ";
             }
         }
-        $command = substr();
+        $command = substr($command, 0, strrpos($command, ' '));
+
+        $this->commandString = $command;
+
+        return $this;
     }
 }
