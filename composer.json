@@ -1,0 +1,20 @@
+{
+    "name": "pipedev/pipe-orm",
+    "description": "Simple php orm that support multiple drivers",
+    "type": "metapackage",
+    "require": {
+        "vlucas/phpdotenv": "^5.4"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Pipedev\\PipeOrm\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Muritala David",
+            "email": "davmuri1414@gmail.com"
+        }
+    ]
+}
