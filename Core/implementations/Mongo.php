@@ -5,19 +5,19 @@ namespace Core;
 class Mongo implements \IDriver
 {
 
-    function connect()
+    static function getInstance()
     {
-        // TODO: Implement connect() method.
+        // TODO: Implement getInstance() method.
     }
 
-    function create()
+    function fetch()
     {
-        // TODO: Implement create() method.
+        // TODO: Implement fetch() method.
     }
 
-    function read()
+    function insert()
     {
-        // TODO: Implement read() method.
+        // TODO: Implement insert() method.
     }
 
     function update()

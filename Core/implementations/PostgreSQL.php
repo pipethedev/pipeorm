@@ -4,42 +4,26 @@ namespace Core;
 
 class PostgreSQL implements \IDriver
 {
-
-    /**
-     * @return mixed
-     */
-    function connect()
+    static function getInstance()
     {
-        // TODO: Implement connect() method.
+        // TODO: Implement getInstance() method.
     }
 
-    /**
-     * @return mixed
-     */
-    function create()
+    function fetch()
     {
-        // TODO: Implement create() method.
+        // TODO: Implement fetch() method.
     }
 
-    /**
-     * @return mixed
-     */
-    function read()
+    function insert()
     {
-        // TODO: Implement read() method.
+        // TODO: Implement insert() method.
     }
 
-    /**
-     * @return mixed
-     */
     function update()
     {
         // TODO: Implement update() method.
     }
 
-    /**
-     * @return mixed
-     */
     function delete()
     {
         // TODO: Implement delete() method.

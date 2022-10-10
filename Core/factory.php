@@ -2,15 +2,18 @@
 
 namespace Core;
 
-
 class DatabaseFactory {
     const MYSQL = "mysql";
     const POSTGRESQL = "postgresql";
-    const MONGO = "mongo";
+    const MONGODB = "mongo";
 
-    static function getDriver(string $driver){
+    public static function getDriver(string $driver){
         switch ($driver){
-            case self::MYSQL:
+            case self::POSTGRESQL:
+                return new PostgreSQL();
+            case self::MONGODB:
+                return new Mongo();
+            default:
                 return new Mysql();
         }
     }

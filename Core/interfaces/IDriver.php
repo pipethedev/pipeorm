@@ -1,11 +1,11 @@
 <?php
 
 interface IDriver {
-    function connect();
+    static function getInstance();
 
-    function create();
+    function fetch();
 
-    function read();
+    function insert();
 
     function update();
 

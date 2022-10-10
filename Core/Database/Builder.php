@@ -56,13 +56,15 @@ class Builder
 
     public function where(string $column, string $operator = null, string $value = null): Builder
     {
-        $args = func_get_args();
-        if(empty($this->where))
-        {
-            $this->where = "where ";
-        }
-        if(count($args) == 3)
-        {}
+//        $args = func_get_args();
+//        if(empty($this->where))
+//        {
+//            $this->where = "where ";
+//        }
+//        if(count($args) == 3)
+//        {
+//            if(){}
+//        }
     }
 
     private function buildSelectCommand(): void

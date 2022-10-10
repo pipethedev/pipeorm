@@ -3,7 +3,8 @@
     "description": "Simple php orm that support multiple drivers",
     "type": "metapackage",
     "require": {
-        "vlucas/phpdotenv": "^5.4"
+        "vlucas/phpdotenv": "^5.4",
+      "ext-mysqli": "*"
     },
     "license": "MIT",
     "autoload": {

@@ -2,39 +2,85 @@
 
 namespace Core;
 
+use Core\Database\Database;
+
 class Mysql implements \IDriver
 {
+    private \mysqli $connection;
 
-    /**
-     * @return mixed
-     */
-    function connect()
+    private static $instance = null;
+
+    public static function getInstance(){
+        if(!static::$instance){
+            static::$instance = new Database();
+        }
+        return static::$instance;
+    }
+
+    public function __construct()
     {
-        // TODO: Implement connect() method.
+        $this->connection = new \mysqli('us-cdbr-east-06.cleardb.net', 'bd60a68cb50f4b', '43189fcf', 'heroku_c91005d515ff088');
+
+        if($this->connection->connect_error){
+            die($this->connection->error);
+        }
+
+    }
+
+    public function query($sql = "")
+    {
+        return $this->connection->query($sql);
     }
 
     /**
-     * @return mixed
+     * @throws \Exception
      */
-    function create()
+    public function fetch($sql, $class=\stdClass::class)
     {
-        // TODO: Implement create() method.
+        $result = $this->query($sql);
+
+        if(!$result){
+            throw new \Exception($this->connection->error);
+        }
+        $out =  array();
+        while ($row = $result->fetch_object($class)){
+            array_push($out, $row);
+        }
+        $result->free();
+        return $out;
+    }
+
+    public function insertGetId($sql)
+    {
+        $result = $this->query($sql);
+        if($result){
+            return $this->connection->insert_id;
+        }
+        return new \Exception($this->connection->error);
     }
 
     /**
-     * @return mixed
+     * @throws \Exception
      */
-    function read()
+    public function insert($sql)
     {
-        // TODO: Implement read() method.
+        $result = $this->query($sql);
+        if($result){
+            return $this->connection->affected_rows;
+        }
+        throw new \Exception($this->connection->error);
     }
 
     /**
-     * @return mixed
+     * @throws \Exception
      */
-    function update()
+    public function update($sql)
     {
-        // TODO: Implement update() method.
+        $result = $this->query($sql);
+        if($result){
+            return $this->connection->affected_rows;
+        }
+        throw new \Exception($this->connection->error);
     }
 
     /**
