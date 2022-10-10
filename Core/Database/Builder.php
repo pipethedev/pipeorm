@@ -4,18 +4,18 @@ namespace Core\Database;
 
 class Builder
 {
-    private $table = '';
-    private $select = [];
-    private $where = '';
-    private $join = '';
-    private $orderBy = '';
-    private $groupBy = '';
-    private $having = '';
-    private $offset = '';
-    private $limit = '';
-    private $commandString = '';
+    private string $table = '';
+    private array $select = [];
+    private string $where = '';
+    private string $join = '';
+    private string $orderBy = '';
+    private string $groupBy = '';
+    private string $having = '';
+    private string $offset = '';
+    private string $limit = '';
+    private string $commandString = '';
 
-    private $select_command_clauses = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy") ;
+    private array $select_command_clauses = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy") ;
 
     public function table($table): Builder
     {
@@ -35,24 +35,47 @@ class Builder
         return $this;
     }
 
-    public function buildSelect()
+    public function orderBy(string $column, string $arrangement = 'ASC'): Builder
     {
-        $command = "";
+        $this->orderBy = "order by ".$column.' '.$arrangement;
+        return $this;
+    }
+
+    public function limit(int $limit): Builder
+    {
+        $this->limit = "limit ". $limit;
+        return $this;
+    }
+
+    public function offset($offset): Builder
+    {
+        $this->limit = "offset ". $offset;
+        return $this;
+    }
+
+    private function buildSelectCommand(): void
+    {
         if(count($this->select) == 0){
-             $command = $this->table.'*';
+             $sqlCommand = '*';
         }else {
-            $command = implode(",", $this ->select);
+            $sqlCommand = implode(",", $this->select);
         }
-        $command = "select ".$command." from ".$this->table. " ";
+        $sqlCommand = "select ".$sqlCommand." from ".$this->table. " ";
         foreach ($this->select_command_clauses as $clause){
             if(!empty($this->$clause)){
-                $command.-$this->$clause. " ";
+                $sqlCommand = $sqlCommand." ".$this->$clause. " ";
             }
         }
-        $command = substr($command, 0, strrpos($command, ' '));
+        $sqlCommand = substr($sqlCommand, 0, strrpos($sqlCommand, ' '));
 
-        $this->commandString = $command;
+        $this->commandString = $sqlCommand;
 
-        return $this;
+    }
+
+
+    public function get(): string
+    {
+        $this->buildSelectCommand();
+        return $this->commandString;
     }
 }
