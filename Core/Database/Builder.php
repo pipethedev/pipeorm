@@ -15,7 +15,8 @@ class Builder
     private string $limit = '';
     private string $commandString = '';
 
-    private array $select_command_clauses = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy") ;
+    private array $select_command_clauses = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy");
+    private bool $appendKeyword = false;
 
     public function table($table): Builder
     {
@@ -53,6 +54,17 @@ class Builder
         return $this;
     }
 
+    public function where(string $column, string $operator = null, string $value = null): Builder
+    {
+        $args = func_get_args();
+        if(empty($this->where))
+        {
+            $this->where = "where ";
+        }
+        if(count($args) == 3)
+        {}
+    }
+
     private function buildSelectCommand(): void
     {
         if(count($this->select) == 0){
@@ -62,6 +74,7 @@ class Builder
         }
         $sqlCommand = "select ".$sqlCommand." from ".$this->table. " ";
         foreach ($this->select_command_clauses as $clause){
+            // e.g $this->orderBy(), $this->limit()
             if(!empty($this->$clause)){
                 $sqlCommand = $sqlCommand." ".$this->$clause. " ";
             }
