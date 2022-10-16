@@ -7,16 +7,15 @@ class Builder
     private string $table = '';
     private array $select = [];
     private string $where = '';
+    private string $having = '';
     private string $join = '';
     private string $orderBy = '';
     private string $groupBy = '';
-    private string $having = '';
     private string $offset = '';
     private string $limit = '';
-    private string $commandString = '';
 
-    private array $select_command_clauses = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy");
-    private bool $appendKeyword = false;
+    private array $aggregateCommands = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy");
+    private bool $isMultipleWhereClause = false;
 
     public function table($table): Builder
     {
@@ -54,43 +53,69 @@ class Builder
         return $this;
     }
 
-    public function where(string $column, string $operator = null, string $value = null): Builder
+    public function orWhere()
     {
-//        $args = func_get_args();
-//        if(empty($this->where))
-//        {
-//            $this->where = "where ";
-//        }
-//        if(count($args) == 3)
-//        {
-//            if(){}
-//        }
+
     }
 
-    private function buildSelectCommand(): void
+    public function where($body, string $operator = null, string $value = null): Builder
     {
-        if(count($this->select) == 0){
-             $sqlCommand = '*';
-        }else {
-            $sqlCommand = implode(",", $this->select);
+       $arguments = func_get_args();
+
+       $totalArguments = count($arguments);
+
+       if(empty($this->where))
+       {
+           $this->where = "where ";
+       }
+       if($totalArguments == 3)
+       {
+           if($this->isMultipleWhereClause){
+            $this->where = $this->where. " and ";
+           }
+           $this->where.=$body." ".$operator." '".$value. "'";
+           $this->isMultipleWhereClause = true;
+       }else if($totalArguments == 1){
+        if(is_array($body)){
+            foreach($body as $key => $value){
+                if($this->isMultipleWhereClause){
+                    $this->where = $this->where. " and ";
+                }
+                $this->where.=$key." = '".$value. "'";
+                $this->isMultipleWhereClause = true;
+            }
+        }else{
+            if($this->where != "where "){
+                $this->where = $this->where. " and ";
+            }
+            $this->where.= " ( ";
+            $this->isMultipleWhereClause= false;
+            // Here $body is a closure(callback function)
+            $body($this);
+            $this->where.= " ) ";
         }
+       }
+       return $this;
+    }
+
+    private function buildCommand(): string
+    {
+        $sqlCommand = count($this->select) == 0 ? '*': implode(",", $this->select);
+
         $sqlCommand = "select ".$sqlCommand." from ".$this->table. " ";
-        foreach ($this->select_command_clauses as $clause){
+        
+        foreach ($this->aggregateCommands as $clause){
             // e.g $this->orderBy(), $this->limit()
             if(!empty($this->$clause)){
                 $sqlCommand = $sqlCommand." ".$this->$clause. " ";
             }
         }
-        $sqlCommand = substr($sqlCommand, 0, strrpos($sqlCommand, ' '));
-
-        $this->commandString = $sqlCommand;
-
+        return substr($sqlCommand, 0, strrpos($sqlCommand, ' '));
     }
 
 
     public function get(): string
     {
-        $this->buildSelectCommand();
-        return $this->commandString;
+        return $this->buildCommand();
     }
 }

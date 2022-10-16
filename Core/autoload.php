@@ -7,5 +7,5 @@ spl_autoload_register(/**
 
     $file = str_replace("\\", '/', $file);
 
-    file_exists($file) ? require_once $file : throw new Exception('file'.$file.'not found');
+    file_exists($file) ? require_once $file : printf('file'.$file.'not found');
 });
