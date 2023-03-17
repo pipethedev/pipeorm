@@ -26,13 +26,8 @@ class Builder
 
     public function select($select): Builder
     {
-        if(is_string($select)){
-            if(!in_array($select, $this->select)){
-                $this->select[] = $select;
-            }
-        }else if(is_array($select)){
-            $this->select = $select;
-        }
+        $this->select = is_array($select) ? $select : func_get_args();
+        
         return $this;
     }
 
@@ -78,9 +73,9 @@ class Builder
             if(!empty($this->where)) $this->where .= " or ";
 
             $this->where.= " ( ";
+            $this->isAndMultipleWhereClause = false;
+            $this->isAndMultipleWhereClause = false;
             $column($this);
-            $this->isAndMultipleWhereClause = false;
-            $this->isAndMultipleWhereClause = false;
             $this->where.= " ) ";
         }
         return $this;
@@ -98,9 +93,7 @@ class Builder
 
        if($totalArguments == 3)
        {
-           if($this->isAndMultipleWhereClause) {
-            $this->where = $this->where. " and ";
-           }
+           if($this->isAndMultipleWhereClause) $this->where .= " and ";
            $this->where.=$column." ".$operator." '".$value. "'";
 
            $this->isAndMultipleWhereClause = true;
@@ -116,13 +109,13 @@ class Builder
             }
         }else{
             if($this->where != "where ") {
-                $this->where = $this->where. " and ";
+                $this->where .= " and ";
             }
             $this->where.= " ( ";
             
             $this->isAndMultipleWhereClause= false;
 
-            // Here $body is a closure(callback function)
+            // Here $column is a closure(callback function)
             $column($this);
 
             $this->where.= " ) ";
@@ -142,6 +135,8 @@ class Builder
     {
         $this->operationForInOr($column, $data);
         $this->isAndMultipleWhereClause = true;
+
+        // Every possiblity there would be several method chaining for where clause
         return $this;
     }
 
@@ -153,7 +148,7 @@ class Builder
             $this->where = $this->where. " and ";
         }
 
-        $this->where.=$column." in (".implode("','", $data).")";
+        $this->where.=$column." in ('".implode("','", $data)."')";
     }
 
     private function build(): string

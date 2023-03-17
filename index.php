@@ -16,4 +16,6 @@ $builder = new Builder();
 //     'age' => 30
 // ])->where(fn($builder) => $builder->where('name', '=', 'pipe'))->get();
 
-echo $builder->table('mentors')->whereIn('id', [1, 2, 3])->orWhere(fn($builder) => $builder->where('name', '=', 'pipe'))->get();
+echo $builder->table('mentors')->select(['first', 'second'])->whereIn('id', [1, 2, 3])->orWhere(function($builder) {
+    $builder->where('name', '=', 'pipe')->where('age', '=', 30)->orWhere('age', '=', 40);
+})->get();

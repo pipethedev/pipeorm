@@ -2,7 +2,7 @@
 
 namespace Core;
 
-class PostgreSQL implements \IDriver
+class PostgreSQLImplementation implements \IDriver
 {
     static function getInstance()
     {

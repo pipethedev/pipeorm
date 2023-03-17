@@ -10,11 +10,11 @@ class DatabaseFactory {
     public static function getDriver(string $driver){
         switch ($driver){
             case self::POSTGRESQL:
-                return new PostgreSQL();
+                return new PostgreSQLImplementation();
             case self::MONGODB:
-                return new Mongo();
+                return new MongoImplementation();
             default:
-                return new Mysql();
+                return new MysqlImplementation();
         }
     }
 }

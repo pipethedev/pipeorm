@@ -4,7 +4,7 @@ namespace Core;
 
 use Core\Database\Database;
 
-class Mysql implements \IDriver
+class MysqlImplementation implements \IDriver
 {
     private \mysqli $connection;
 

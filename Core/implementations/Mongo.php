@@ -2,7 +2,7 @@
 
 namespace Core;
 
-class Mongo implements \IDriver
+class MongoImplementation implements \IDriver
 {
 
     static function getInstance()
