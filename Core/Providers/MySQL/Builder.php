@@ -4,7 +4,7 @@ namespace Core\Providers\MySQL;
 
 use Core\Interfaces\IBuilder;
 
-class MySQLBuilder implements IBuilder
+class Builder implements IBuilder
 {
     protected string $table;
     private array $select = [];
@@ -25,37 +25,37 @@ class MySQLBuilder implements IBuilder
         $this->table = $table;
     }
 
-    public static function table($table): MySQLBuilder
+    public static function table($table): Builder
     {
-        return new MySQLBuilder($table);
+        return new Builder($table);
     }
 
-    public function select($select): MySQLBuilder
+    public function select($select): Builder
     {
         $this->select = is_array($select) ? $select : func_get_args();
 
         return $this;
     }
 
-    public function orderBy(string $column, string $arrangement = 'ASC'): MySQLBuilder
+    public function orderBy(string $column, string $arrangement = 'ASC'): Builder
     {
         $this->orderBy = "ORDER BY ".$column.' '.$arrangement;
         return $this;
     }
 
-    public function limit(int $limit): MySQLBuilder
+    public function limit(int $limit): Builder
     {
         $this->limit = "LIMI ". $limit;
         return $this;
     }
 
-    public function offset($offset): MySQLBuilder
+    public function offset($offset): Builder
     {
         $this->limit = "OFFSET ". $offset;
         return $this;
     }
 
-    public function orWhere($column, ?string $operator = null, ?string $value = null): MySQLBuilder
+    public function orWhere($column, ?string $operator = null, ?string $value = null): Builder
     {
         $totalArguments = func_num_args();
  
@@ -85,7 +85,7 @@ class MySQLBuilder implements IBuilder
         return $this;
     }
 
-    public function where($column, ?string $operator = null, ?string $value = null): MySQLBuilder
+    public function where($column, ?string $operator = null, ?string $value = null): Builder
     {
        $totalArguments = func_num_args();
 
@@ -125,14 +125,14 @@ class MySQLBuilder implements IBuilder
        return $this;
     }
 
-    public function orWhereIn(string $column, array $data): MySQLBuilder
+    public function orWhereIn(string $column, array $data): Builder
     {
         $this->operationForInOr($column, $data);
         $this->IsOrMultipleWhereClause = true;
         return $this;
     }
 
-    public function whereIn(string $column, array $data): MySQLBuilder
+    public function whereIn(string $column, array $data): Builder
     {
         $this->operationForInOr($column, $data);
         $this->isAndMultipleWhereClause = true;
@@ -141,7 +141,7 @@ class MySQLBuilder implements IBuilder
         return $this;
     }
 
-    public function join(): MySQLBuilder
+    public function join(): Builder
     {
         $this->join = "JOIN ".func_get_args()[0]." ON ".func_get_args()[1]. " ".func_get_args()[2]." ".func_get_args()[3];
 

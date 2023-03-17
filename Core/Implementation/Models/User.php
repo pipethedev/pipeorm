@@ -1,11 +1,8 @@
 <?PHP
 
-namespace Core\Implementation;
+namespace Core\Implementation\Models;
+use Core\Providers\MySQL\BaseModel; 
 
-use Core\Providers\MySQLModel;
-
-class User extends MySQLModel {
+class User extends BaseModel {
     protected $table = 'users';
 }
-
-// User::table('users')->select('id', 'name')->get();

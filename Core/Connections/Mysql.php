@@ -1,9 +1,10 @@
 <?php
 
-namespace Core;
+namespace Core\Connections;
+
 use PDO;
 
-class MysqlConnection {
+class MySQL {
     private static $instance;
 
     private $pdo;

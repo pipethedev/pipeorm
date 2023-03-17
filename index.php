@@ -1,5 +1,6 @@
 <?php
 
+
 $root = dirname(__FILE__);
 
 $root = str_replace("\\", '/', $root);
@@ -8,7 +9,7 @@ define('ROOT', $root);
 require_once ROOT."/Core/autoload.php";
 require_once ROOT."/Core/helpers.php";
 
-use Core\Providers\MySQL\MySQLBuilder;
+use Core\Implementation\Models\User;
 
 
 // echo $builder->table('mentors')->select(['first_name', 'last_name'])->orderBy('id', 'desc')->where([
@@ -19,4 +20,6 @@ use Core\Providers\MySQL\MySQLBuilder;
 //     $builder->where('name', '=', 'pipe')->where('age', '=', 30)->orWhere('age', '=', 40);
 // })->get();
 
-echo MySQLBuilder::table('samples')->where('id', '=',2)->join('samples', 'samples.id', '=', 'samples.id')->get();
+echo User::execute()->select(['first_name', 'last_name'])->where('id', '=', 1)->get();
+
+// echo MySQLBuilder::table('samples')->where('id', '=',2)->join('samples', 'samples.id', '=', 'samples.id')->get();
