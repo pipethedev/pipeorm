@@ -1,10 +1,12 @@
 <?php
 
-namespace Core\Database;
+namespace Core\Providers\MySQL;
 
-class Builder
+use Core\Interfaces\IBuilder;
+
+class MySQLBuilder implements IBuilder
 {
-    private string $table = '';
+    protected string $table;
     private array $select = [];
     private string $where = '';
     private string $having = '';
@@ -18,59 +20,61 @@ class Builder
     private bool $isAndMultipleWhereClause = false;
     private bool $IsOrMultipleWhereClause = false;
 
-    public function table($table): Builder
+    public function __construct(string $table = 'users')
     {
         $this->table = $table;
-        return $this;
     }
 
-    public function select($select): Builder
+    public static function table($table): MySQLBuilder
+    {
+        return new MySQLBuilder($table);
+    }
+
+    public function select($select): MySQLBuilder
     {
         $this->select = is_array($select) ? $select : func_get_args();
-        
+
         return $this;
     }
 
-    public function orderBy(string $column, string $arrangement = 'ASC'): Builder
+    public function orderBy(string $column, string $arrangement = 'ASC'): MySQLBuilder
     {
-        $this->orderBy = "order by ".$column.' '.$arrangement;
+        $this->orderBy = "ORDER BY ".$column.' '.$arrangement;
         return $this;
     }
 
-    public function limit(int $limit): Builder
+    public function limit(int $limit): MySQLBuilder
     {
-        $this->limit = "limit ". $limit;
+        $this->limit = "LIMI ". $limit;
         return $this;
     }
 
-    public function offset($offset): Builder
+    public function offset($offset): MySQLBuilder
     {
-        $this->limit = "offset ". $offset;
+        $this->limit = "OFFSET ". $offset;
         return $this;
     }
 
-    public function orWhere($column, string $operator = null, string $value = null): Builder
+    public function orWhere($column, ?string $operator = null, ?string $value = null): MySQLBuilder
     {
-        $arguments = func_get_args();
-
-        $totalArguments = count($arguments);
+        $totalArguments = func_num_args();
  
         if(empty($this->where))
         {
-            $this->where = "where ";
+            $this->where = "WHERE ";
         } 
         if($totalArguments == 3)
         {
             if($this->isAndMultipleWhereClause || $this->IsOrMultipleWhereClause) {
-             $this->where .= " or ";
+             $this->where .= " OR ";
             }
 
-            $this->where.=$column." ".$operator." '".$value. "'";
+            $this->where .= "{$column} {$operator} '{$value}'";
 
             $this->IsOrMultipleWhereClause = true;
 
-        }else if($totalArguments == 1){
-            if(!empty($this->where)) $this->where .= " or ";
+        }else if(is_callable($column)) {
+            if(!empty($this->where)) $this->where .= " OR ";
 
             $this->where.= " ( ";
             $this->isAndMultipleWhereClause = false;
@@ -81,20 +85,17 @@ class Builder
         return $this;
     }
 
-    public function where($column, string $operator = null, string $value = null): Builder
+    public function where($column, ?string $operator = null, ?string $value = null): MySQLBuilder
     {
+       $totalArguments = func_num_args();
 
-       // Treat where cases for functions, array and string
-       $arguments = func_get_args();
-
-       $totalArguments = count($arguments);
-
-       if(empty($this->where)) $this->where = "where ";
+       if(empty($this->where)) $this->where = "WHERE ";
 
        if($totalArguments == 3)
        {
            if($this->isAndMultipleWhereClause) $this->where .= " and ";
-           $this->where.=$column." ".$operator." '".$value. "'";
+
+           $this->where .= "{$column} {$operator} '{$value}'";
 
            $this->isAndMultipleWhereClause = true;
        }else if($totalArguments == 1) {
@@ -107,15 +108,15 @@ class Builder
 
                 $this->isAndMultipleWhereClause = true;
             }
-        }else{
-            if($this->where != "where ") {
+        }else if(is_callable($column)){
+            // Situations where we have : where(function($query) { ... })
+            if($this->where != "WHERE ") {
                 $this->where .= " and ";
             }
             $this->where.= " ( ";
             
             $this->isAndMultipleWhereClause= false;
-
-            // Here $column is a closure(callback function)
+            
             $column($this);
 
             $this->where.= " ) ";
@@ -124,14 +125,14 @@ class Builder
        return $this;
     }
 
-    public function orWhereIn(string $column, array $data)
+    public function orWhereIn(string $column, array $data): MySQLBuilder
     {
         $this->operationForInOr($column, $data);
         $this->IsOrMultipleWhereClause = true;
         return $this;
     }
 
-    public function whereIn(string $column, array $data)
+    public function whereIn(string $column, array $data): MySQLBuilder
     {
         $this->operationForInOr($column, $data);
         $this->isAndMultipleWhereClause = true;
@@ -140,24 +141,31 @@ class Builder
         return $this;
     }
 
+    public function join(): MySQLBuilder
+    {
+        $this->join = "JOIN ".func_get_args()[0]." ON ".func_get_args()[1]. " ".func_get_args()[2]." ".func_get_args()[3];
+
+        return $this;
+    }
+
     protected function operationForInOr(string $column, array $data)
     {
-        if(empty($this->where)) $this->where = "where ";
+        if(empty($this->where)) $this->where = "WHERE ";
 
         if($this->isAndMultipleWhereClause || $this->IsOrMultipleWhereClause) {
             $this->where = $this->where. " and ";
         }
 
-        $this->where.=$column." in ('".implode("','", $data)."')";
+        $this->where.=$column." IN ('".implode("','", $data)."')";
     }
 
     private function build(): string
     {
         if(empty($this->table)) throw new \Exception("Table name is required");
 
-        $sqlCommand = count($this->select) == 0 ? '*': implode(",", $this->select);
+        $command = count($this->select) == 0 ? '*': implode(",", $this->select);
 
-        $sqlCommand = "select ".$sqlCommand." from ".$this->table. " ";
+        $sqlCommand = "SELECT ".$command." FROM ".$this->table. "";
         
         foreach ($this->commands as $clause){
             // e.g $this->orderBy(), $this->limit()
@@ -167,7 +175,6 @@ class Builder
         }
         return substr($sqlCommand, 0, strrpos($sqlCommand, ' '));
     }
-
 
     public function get(): string
     {
