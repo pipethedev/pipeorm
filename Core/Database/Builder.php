@@ -14,8 +14,9 @@ class Builder
     private string $offset = '';
     private string $limit = '';
 
-    private array $aggregateCommands = array("join", "where", "groupBy", "having", "offset", "limit", "orderBy");
-    private bool $isMultipleWhereClause = false;
+    private array $commands = array("join", "where", "offset", "limit", "orderBy", "groupBy", "having",);
+    private bool $isAndMultipleWhereClause = false;
+    private bool $IsOrMultipleWhereClause = false;
 
     public function table($table): Builder
     {
@@ -53,58 +54,117 @@ class Builder
         return $this;
     }
 
-    public function orWhere()
+    public function orWhere($column, string $operator = null, string $value = null): Builder
     {
+        $arguments = func_get_args();
 
+        $totalArguments = count($arguments);
+ 
+        if(empty($this->where))
+        {
+            $this->where = "where ";
+        } 
+        if($totalArguments == 3)
+        {
+            if($this->isAndMultipleWhereClause || $this->IsOrMultipleWhereClause) {
+             $this->where .= " or ";
+            }
+
+            $this->where.=$column." ".$operator." '".$value. "'";
+
+            $this->IsOrMultipleWhereClause = true;
+
+        }else if($totalArguments == 1){
+            if(!empty($this->where)) $this->where .= " or ";
+
+            $this->where.= " ( ";
+            $column($this);
+            $this->isAndMultipleWhereClause = false;
+            $this->isAndMultipleWhereClause = false;
+            $this->where.= " ) ";
+        }
+        return $this;
     }
 
-    public function where($body, string $operator = null, string $value = null): Builder
+    public function where($column, string $operator = null, string $value = null): Builder
     {
+
+       // Treat where cases for functions, array and string
        $arguments = func_get_args();
 
        $totalArguments = count($arguments);
 
-       if(empty($this->where))
-       {
-           $this->where = "where ";
-       }
+       if(empty($this->where)) $this->where = "where ";
+
        if($totalArguments == 3)
        {
-           if($this->isMultipleWhereClause){
+           if($this->isAndMultipleWhereClause) {
             $this->where = $this->where. " and ";
            }
-           $this->where.=$body." ".$operator." '".$value. "'";
-           $this->isMultipleWhereClause = true;
-       }else if($totalArguments == 1){
-        if(is_array($body)){
-            foreach($body as $key => $value){
-                if($this->isMultipleWhereClause){
+           $this->where.=$column." ".$operator." '".$value. "'";
+
+           $this->isAndMultipleWhereClause = true;
+       }else if($totalArguments == 1) {
+        if(is_array($column)){
+            foreach($column as $key => $value){
+                if($this->isAndMultipleWhereClause) {
                     $this->where = $this->where. " and ";
                 }
                 $this->where.=$key." = '".$value. "'";
-                $this->isMultipleWhereClause = true;
+
+                $this->isAndMultipleWhereClause = true;
             }
         }else{
-            if($this->where != "where "){
+            if($this->where != "where ") {
                 $this->where = $this->where. " and ";
             }
             $this->where.= " ( ";
-            $this->isMultipleWhereClause= false;
+            
+            $this->isAndMultipleWhereClause= false;
+
             // Here $body is a closure(callback function)
-            $body($this);
+            $column($this);
+
             $this->where.= " ) ";
         }
        }
        return $this;
     }
 
-    private function buildCommand(): string
+    public function orWhereIn(string $column, array $data)
     {
+        $this->operationForInOr($column, $data);
+        $this->IsOrMultipleWhereClause = true;
+        return $this;
+    }
+
+    public function whereIn(string $column, array $data)
+    {
+        $this->operationForInOr($column, $data);
+        $this->isAndMultipleWhereClause = true;
+        return $this;
+    }
+
+    protected function operationForInOr(string $column, array $data)
+    {
+        if(empty($this->where)) $this->where = "where ";
+
+        if($this->isAndMultipleWhereClause || $this->IsOrMultipleWhereClause) {
+            $this->where = $this->where. " and ";
+        }
+
+        $this->where.=$column." in (".implode("','", $data).")";
+    }
+
+    private function build(): string
+    {
+        if(empty($this->table)) throw new \Exception("Table name is required");
+
         $sqlCommand = count($this->select) == 0 ? '*': implode(",", $this->select);
 
         $sqlCommand = "select ".$sqlCommand." from ".$this->table. " ";
         
-        foreach ($this->aggregateCommands as $clause){
+        foreach ($this->commands as $clause){
             // e.g $this->orderBy(), $this->limit()
             if(!empty($this->$clause)){
                 $sqlCommand = $sqlCommand." ".$this->$clause. " ";
@@ -116,6 +176,6 @@ class Builder
 
     public function get(): string
     {
-        return $this->buildCommand();
+        return $this->build();
     }
 }
